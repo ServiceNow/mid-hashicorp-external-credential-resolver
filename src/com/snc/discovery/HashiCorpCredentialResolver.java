@@ -48,6 +48,9 @@ public class HashiCorpCredentialResolver {
 
 	// the string private key for the credential, if needed...
 	public static final String VAL_PKEY = "pkey";
+	
+	public static final String HASHICORP_VAULT_ADDRESS_PROPERTY = "mid.ext.cred.hashicorp.vault.address";
+	public static final String HASHICORP_VAULT_TOKEN_PROPERTY = "mid.ext.cred.hashicorp.vault.token";
 
 	//Remove hard-coded values and read them from config.xml
 	private String hashicorpVaultAddress = "";
@@ -59,13 +62,13 @@ public class HashiCorpCredentialResolver {
 
 	private void loadProps() {
 		//Load vault details from MID config.xml parameters
-		hashicorpVaultAddress = Config.get().getProperty("mid.external_credentials.vault.address");
+		hashicorpVaultAddress = Config.get().getProperty(HASHICORP_VAULT_ADDRESS_PROPERTY);
 		if(isNullOrEmpty(hashicorpVaultAddress))
-			throw new RuntimeException("[Vault] INFO - HashiCorpCredentialResolver mid.external_credentials.vault.address not set!");
+			throw new RuntimeException("[Vault] INFO - HashiCorpCredentialResolver " + HASHICORP_VAULT_ADDRESS_PROPERTY + " not set!");
 
-		hashicorpVaultToken = Config.get().getProperty("mid.external_credentials.vault.token");
+		hashicorpVaultToken = Config.get().getProperty(HASHICORP_VAULT_TOKEN_PROPERTY);
 		if(isNullOrEmpty(hashicorpVaultToken))
-			throw new RuntimeException("[Vault] INFO - HashiCorpCredentialResolver mid.external_credentials.vault.token not set!");
+			throw new RuntimeException("[Vault] INFO - HashiCorpCredentialResolver " + HASHICORP_VAULT_TOKEN_PROPERTY + " not set!");
 	}
 
 	/**
@@ -105,13 +108,13 @@ public class HashiCorpCredentialResolver {
 			case "basic":
 				
 				username = response.getData().get("username"); // Static Secret
-				password = response.getData().get("current_password"); // Static Secret
+				password = response.getData().get("password"); // Static Secret
 				
 				//TODO: find working API for AD
 				if ( id.contains("ad/creds/") ) {
 					//String role = id.substring(id.lastIndexOf("/")+1);
 					//username = vault.activedirectory().getRole(role).getData().get("service_account_name"); // AD Secret
-					//password = vault.activedirectory().creds(role).getData().get("current_password"); // AD Secret
+					//password = vault.activedirectory().creds(role).getData().get("password"); // AD Secret
 				}
 
 				break;
@@ -124,7 +127,7 @@ public class HashiCorpCredentialResolver {
 			case "api_key":
 				// Read operation
 				username = response.getData().get("username");
-				password = response.getData().get("current_password");
+				password = response.getData().get("password");
 				passphrase = response.getData().get("ssh_passphrase");
 				private_key = response.getData().get("ssh_private_key");
 				
@@ -174,15 +177,14 @@ public class HashiCorpCredentialResolver {
 		HashiCorpCredentialResolver obj = new HashiCorpCredentialResolver();
 		// obj.loadProps();
 		// use your local details for testing.
-		obj.hashicorpVaultAddress = "http://127.0.0.1:8200";
-		obj.hashicorpVaultToken = "<token>"; //s.mTxDdTEl6PNvg7a4n3KAjmck
+		obj.hashicorpVaultAddress = "<hashicorp url>";
+		obj.hashicorpVaultToken = "<token>";
 
 		Map<String, String> map = new HashMap<>();
-		map.put(ARG_ID, "kv/hello");
+		map.put(ARG_ID, "kv/windowscred");
 		map.put(ARG_TYPE, "windows");
 
 		Map<String, String> result = obj.resolve(map );
 		System.out.println(result.toString());
-
 	}
 }
