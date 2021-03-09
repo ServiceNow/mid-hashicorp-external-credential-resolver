@@ -170,7 +170,7 @@ public class HashiCorpCredentialResolver {
 	 * Return the API version supported by this class.
 	 */
 	public String getVersion() {
-		return "1.0";
+		return "2.0";
 	}
 
 	public static void main(String[] args) {
