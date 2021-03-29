@@ -41,4 +41,32 @@ Eclipse or any equivalent IDE
 * Ensure that the "Credential ID" match a secret path in your Hashicorp credential store (ex: kv/mycred)
 * Ensure that the secret in the vault contain keys matching the ServiceNow credential record fields (ex: username, password)
 
+# To use non-root user to connect to HashiCorp server, follow below steps.
+
+* Follow below link to create userpass in HashiCorp vault.
+
+	https://www.vaultproject.io/api-docs/auth/userpass
+	
+* Use below code to get the token for the given username and password.
+
+	String hashicorpVaultAddress = "";
+	
+	String hashiCorpUser = "username";
+	
+	String hashiCorpPassword = "password";
+	
+	final VaultConfig authConfig = new VaultConfig()
+			.address(hashicorpVaultAddress)
+			.openTimeout(60)    
+			.readTimeout(60)    
+			.sslConfig(new SslConfig().build())
+			.build();
+			
+	final Vault authVault = new Vault(authConfig);
+	
+	com.bettercloud.vault.response.AuthResponse authResp = authVault.auth().loginByUserPass(hashiCorpUser, hashiCorpPassword);
+	
+	//This token can be used for connecting to HashiCorp
+	
+	String hashicorpVaultToken = authResp.getAuthClientToken();
 

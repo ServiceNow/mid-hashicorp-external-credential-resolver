@@ -63,12 +63,27 @@ public class CredentialResolver implements IExternalCredential{
 
 		// Connect to vault and retrieve credential
 		try {
+			//To use username and password to connect to HashiCorp server, use below code to fetch the token
+			/*
+			String hashiCorpUser;  // get the value from config.xml using config method
+			String hashiCorpPassword; //get the value from config.xml using config method
+			final VaultConfig authConfig = new VaultConfig()
+					.address(hashicorpVaultAddress)
+					.openTimeout(60)       // Defaults to "VAULT_OPEN_TIMEOUT" environment variable
+					.readTimeout(60)       // Defaults to "VAULT_READ_TIMEOUT" environment variable
+					.sslConfig(new SslConfig().build())   //"SSL Config" to use client certificate.
+					.build();
+			final Vault authVault = new Vault(authConfig);
+			com.bettercloud.vault.response.AuthResponse authResp = authVault.auth().loginByUserPass(hashiCorpUser, hashiCorpPassword);
+			hashicorpVaultToken = authResp.getAuthClientToken();
+			*/
+			
 			final VaultConfig config = new VaultConfig()
 					.address(hashicorpVaultAddress)
 					.token(hashicorpVaultToken)
 					.openTimeout(60)       // Defaults to "VAULT_OPEN_TIMEOUT" environment variable
 					.readTimeout(60)       // Defaults to "VAULT_READ_TIMEOUT" environment variable
-					.sslConfig(new SslConfig().build())   // See "SSL Config" section below
+					.sslConfig(new SslConfig().build())   //"SSL Config" to use client certificate.
 					.build();
 			final Vault vault = new Vault(config);
 			LogicalResponse response = vault.logical().read(id);
