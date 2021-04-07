@@ -9,6 +9,8 @@ import com.bettercloud.vault.VaultConfig;
 import com.bettercloud.vault.VaultException;
 import com.bettercloud.vault.response.LogicalResponse;
 import com.snc.automation_common.integration.creds.IExternalCredential;
+import com.snc.core_automation_common.logging.Logger;
+import com.snc.core_automation_common.logging.LoggerFactory;
 
 /**
  * Custom External Credential Resolver for HashiCorp credential vault.
@@ -22,6 +24,9 @@ public class CredentialResolver implements IExternalCredential{
 	//Remove hard-coded values and read them from config.xml
 	private String hashicorpVaultAddress = "";
 	private String hashicorpVaultToken = "";
+	
+	// Logger object to log messages in agent.log
+	private static final Logger fLogger = LoggerFactory.getLogger(CredentialResolver.class);
 
 	public CredentialResolver() {
 	}
@@ -36,6 +41,7 @@ public class CredentialResolver implements IExternalCredential{
 		//propValue = Config.get().getProperty("<Parameter Name>")
 		
 		hashicorpVaultAddress = configMap.get(HASHICORP_VAULT_ADDRESS_PROPERTY);
+		fLogger.info("hashicorpVaultAddress : " + hashicorpVaultAddress);
 		if(isNullOrEmpty(hashicorpVaultAddress))
 			throw new RuntimeException("[Vault] INFO - CredentialResolver " + HASHICORP_VAULT_ADDRESS_PROPERTY + " not set!");
 
@@ -50,15 +56,17 @@ public class CredentialResolver implements IExternalCredential{
 	@Override
 	public Map<String, String> resolve(Map<String, String> args) {
 		
-		String id = (String) args.get(ARG_ID);
-		String type = (String) args.get(ARG_TYPE);
-
+		String credId = (String) args.get(ARG_ID);
+		String credType = (String) args.get(ARG_TYPE);
+		fLogger.info("credId: " + credId);
+		fLogger.info("credType: " + credType);
+		
 		String username = "";
 		String password = "";
 		String passphrase = "";
 		String private_key = "";
 
-		if(id == null || type == null)
+		if(credId == null || credType == null)
 			throw new RuntimeException("Invalid credential Id or type found.");
 
 		// Connect to vault and retrieve credential
@@ -86,8 +94,8 @@ public class CredentialResolver implements IExternalCredential{
 					.sslConfig(new SslConfig().build())   //"SSL Config" to use client certificate.
 					.build();
 			final Vault vault = new Vault(config);
-			LogicalResponse response = vault.logical().read(id);
-			switch(type) {
+			LogicalResponse response = vault.logical().read(credId);
+			switch(credType) {
 			// for below listed credential type , just retrieve user name and password 
 			case "windows":
 			case "ssh_password": // Type SSH
@@ -100,7 +108,7 @@ public class CredentialResolver implements IExternalCredential{
 				password = response.getData().get("password"); // Static Secret
 				
 				//TODO: find working API for AD
-				if ( id.contains("ad/creds/") ) {
+				if (credId.contains("ad/creds/") ) {
 					//String role = id.substring(id.lastIndexOf("/")+1);
 					//username = vault.activedirectory().getRole(role).getData().get("service_account_name"); // AD Secret
 					//password = vault.activedirectory().creds(role).getData().get("password"); // AD Secret
@@ -131,14 +139,13 @@ public class CredentialResolver implements IExternalCredential{
 			case "azure": ; // tenant_id, client_id, auth_method, secret_key
 			case "gcp": ; // email , secret_key
 			default:
-				System.err.println("[Vault] INFO - CredentialResolver, not implemented credential type!");
+				fLogger.error("[Vault] INFO - CredentialResolver- invalid credential type found.");
 				break;
 			}
 		} 
 		catch (VaultException e) {
 			// Catch block
-			System.err.println("### Unable to connect to Vault: " + hashicorpVaultAddress + " #### ");
-			e.printStackTrace();
+			fLogger.error("### Unable to connect to Vault: " + hashicorpVaultAddress, e);
 		}
 		// the resolved credential is returned in a HashMap...
 		Map<String, String> result = new HashMap<String, String>();
@@ -178,6 +185,6 @@ public class CredentialResolver implements IExternalCredential{
 		map.put(ARG_TYPE, "windows");
 
 		Map<String, String> result = obj.resolve(map );
-		System.out.println(result.toString());
+		fLogger.info(result.toString());
 	}
 }
