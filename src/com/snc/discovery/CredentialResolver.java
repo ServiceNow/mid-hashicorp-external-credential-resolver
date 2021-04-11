@@ -43,11 +43,11 @@ public class CredentialResolver implements IExternalCredential{
 		hashicorpVaultAddress = configMap.get(HASHICORP_VAULT_ADDRESS_PROPERTY);
 		fLogger.info("hashicorpVaultAddress : " + hashicorpVaultAddress);
 		if(isNullOrEmpty(hashicorpVaultAddress))
-			throw new RuntimeException("[Vault] INFO - CredentialResolver " + HASHICORP_VAULT_ADDRESS_PROPERTY + " not set!");
+			fLogger.error("[Vault] INFO - CredentialResolver " + HASHICORP_VAULT_ADDRESS_PROPERTY + " not set!");
 
 		hashicorpVaultToken = configMap.get(HASHICORP_VAULT_TOKEN_PROPERTY);
 		if(isNullOrEmpty(hashicorpVaultToken))
-			throw new RuntimeException("[Vault] INFO - CredentialResolver " + HASHICORP_VAULT_TOKEN_PROPERTY + " not set!");
+			fLogger.error("[Vault] INFO - CredentialResolver " + HASHICORP_VAULT_TOKEN_PROPERTY + " not set!");
 	}
 
 	/**
@@ -164,11 +164,11 @@ public class CredentialResolver implements IExternalCredential{
 	
 	/**
 	 * Return the API version supported by this class.
-	 * Note: should be more than 1.1 for external credential resolver.
+	 * Note: should be less than 1.1 for external credential resolver.
 	 */
 	@Override
 	public String getVersion() {
-		return "2.0";
+		return "0.1";
 	}
 
 	//main method to test locally, provide your vault details and test it.
