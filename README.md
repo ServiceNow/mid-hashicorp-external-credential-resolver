@@ -70,3 +70,17 @@ Eclipse or any equivalent IDE
 	
 	String hashicorpVaultToken = authResp.getAuthClientToken();
 
+# To connect to SSL enabled HashiCorp vault server (HTTPS), follow below steps.
+
+* Follow below link to setup SSL TCP listener in HashiCorp vault server.
+
+	https://www.vaultproject.io/docs/configuration/listener/tcp
+	
+* Follow below link to update the HashiCorp credential resolved code to connect to HashiCorp using HTTPS.
+
+	https://github.com/BetterCloud/vault-java-driver#ssl-config
+  
+
+	
+
+

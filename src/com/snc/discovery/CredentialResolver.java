@@ -86,12 +86,17 @@ public class CredentialResolver implements IExternalCredential{
 			hashicorpVaultToken = authResp.getAuthClientToken();
 			*/
 			
+			// "SSL Config" to use client certificate.
+			SslConfig sslConfig = new SslConfig();
+			// set verify to false to ignore certificate validation for self-signed certificates.
+			// sslConfig.verify(false);
+			
 			final VaultConfig config = new VaultConfig()
 					.address(hashicorpVaultAddress)
 					.token(hashicorpVaultToken)
 					.openTimeout(60)       // Defaults to "VAULT_OPEN_TIMEOUT" environment variable
 					.readTimeout(60)       // Defaults to "VAULT_READ_TIMEOUT" environment variable
-					.sslConfig(new SslConfig().build())   //"SSL Config" to use client certificate.
+					.sslConfig(sslConfig.build())
 					.build();
 			final Vault vault = new Vault(config);
 			LogicalResponse response = vault.logical().read(credId);
@@ -104,15 +109,8 @@ public class CredentialResolver implements IExternalCredential{
 			case "jms": 
 			case "basic":
 				
-				username = response.getData().get("username"); // Static Secret
-				password = response.getData().get("password"); // Static Secret
-				
-				//TODO: find working API for AD
-				if (credId.contains("ad/creds/") ) {
-					//String role = id.substring(id.lastIndexOf("/")+1);
-					//username = vault.activedirectory().getRole(role).getData().get("service_account_name"); // AD Secret
-					//password = vault.activedirectory().creds(role).getData().get("password"); // AD Secret
-				}
+				username = response.getData().get("username");
+				password = response.getData().get("password");
 
 				break;
 				// for below listed credential type , retrieve user name, password, ssh_passphrase, ssh_private_key
@@ -124,9 +122,8 @@ public class CredentialResolver implements IExternalCredential{
 			case "api_key":
 				// Read operation
 				username = response.getData().get("username");
-				password = response.getData().get("password");
+				private_key = response.getData().get("password"); //use corresponding attribute name for private_key
 				passphrase = response.getData().get("ssh_passphrase");
-				private_key = response.getData().get("ssh_private_key");
 				
 				break;
 			case "aws": ; // access_key, secret_key 	// AWS Support
@@ -150,8 +147,11 @@ public class CredentialResolver implements IExternalCredential{
 		// the resolved credential is returned in a HashMap...
 		Map<String, String> result = new HashMap<String, String>();
 		result.put(VAL_USER, username);
-		result.put(VAL_PSWD, password);
-		result.put(VAL_PKEY, private_key);
+		if (isNullOrEmpty(private_key)) {
+			result.put(VAL_PSWD, password);
+		} else {
+			result.put(VAL_PKEY, private_key);
+		}
 		result.put(VAL_PASSPHRASE, passphrase);
 		return result;
 	}
@@ -181,10 +181,12 @@ public class CredentialResolver implements IExternalCredential{
 		obj.hashicorpVaultToken = "<token>";
 
 		Map<String, String> map = new HashMap<>();
-		map.put(ARG_ID, "kv/windowscred");
-		map.put(ARG_TYPE, "windows");
+		String credId = "kv/testwin";
+		String credType = "windows";
+		map.put(ARG_ID, credId);
+		map.put(ARG_TYPE, credType);
 
 		Map<String, String> result = obj.resolve(map );
-		fLogger.info(result.toString());
+		System.out.println("Result: " + result.toString());
 	}
 }
