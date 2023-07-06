@@ -81,7 +81,5 @@ Eclipse or any equivalent IDE
 
 	https://github.com/BetterCloud/vault-java-driver#ssl-config
   
-
-	
-
-
+## Vulnerability Reporting
+Please notify psirt-oss@servicenow.com regarding any vulnerability reports in addition to following current reporting procedure.
